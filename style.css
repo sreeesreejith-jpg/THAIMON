@@ -174,45 +174,56 @@ h1 {
     text-align: right;
 }
 
-/* Print Specific Styles */
+/* Print Specific Styles - Optimized for A4 Table */
 @media print {
-    body * {
-        display: none !important;
+    @page {
+        size: A4;
+        margin: 0;
     }
 
-    #report-preview,
-    #report-preview * {
-        display: block !important;
-        visibility: visible !important;
-    }
-
-    body,
-    .container {
+    body {
         background: white !important;
-        padding: 0 !important;
         margin: 0 !important;
-        display: block !important;
-        box-shadow: none !important;
+        padding: 0 !important;
+        visibility: hidden;
     }
 
     #report-preview {
+        visibility: visible;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        height: auto;
         display: block !important;
         border: 2px solid #0000FF !important;
+        box-sizing: border-box;
+    }
+
+    #report-preview * {
+        visibility: visible;
+    }
+
+    /* Prevent page breaks inside the report box */
+    #report-preview {
+        page-break-inside: avoid;
     }
 
     .report-table {
-        display: table !important;
-        border: 2px solid #000 !important;
-    }
-
-    .report-table tr {
-        display: table-row !important;
+        width: 100% !important;
+        border-collapse: collapse !important;
+        table-layout: fixed;
     }
 
     .report-table th,
     .report-table td {
-        display: table-cell !important;
         border: 1px solid #000 !important;
+        padding: 8px !important;
+    }
+
+    .report-header-box,
+    .report-type-box {
+        border-bottom: 2px solid #0000FF !important;
     }
 }
 

@@ -81,17 +81,17 @@
                     <tr>
                         <td>SC</td>
                         <td id="rep-sc"></td>
-                        <td>0</td>
+                        <td id="rep-sc-fee"></td>
                     </tr>
                     <tr>
                         <td>ST</td>
                         <td id="rep-st"></td>
-                        <td>0</td>
+                        <td id="rep-st-fee"></td>
                     </tr>
                     <tr>
                         <td>OEC</td>
                         <td id="rep-oec"></td>
-                        <td>0</td>
+                        <td id="rep-oec-fee"></td>
                     </tr>
                     <tr>
                         <td>General</td>
@@ -127,13 +127,13 @@
 
         // Show/Hide fields
         typeSelect.addEventListener('change', () => {
-            if (typeSelect.value === 'first') {
+            if (typeSelect.value) {
                 firstFields.classList.remove('hidden');
-                previewEl.style.display = 'none';
-                printBtn.classList.add('hidden');
             } else {
                 firstFields.classList.add('hidden');
             }
+            previewEl.style.display = 'none';
+            printBtn.classList.add('hidden');
         });
 
         // Calculate Fees
@@ -151,14 +151,23 @@
             // Fill Preview Data
             document.getElementById('rep-type-name').textContent = typeSelect.options[typeSelect.selectedIndex].text;
             document.getElementById('rep-total').textContent = document.getElementById('total-students').value || "0";
+
             document.getElementById('rep-sc').textContent = document.getElementById('sc-students').value || "0";
+            document.getElementById('rep-sc-fee').textContent = "0";
+
             document.getElementById('rep-st').textContent = document.getElementById('st-students').value || "0";
+            document.getElementById('rep-st-fee').textContent = "0";
+
             document.getElementById('rep-oec').textContent = document.getElementById('oec-students').value || "0";
+            document.getElementById('rep-oec-fee').textContent = "0";
+
             document.getElementById('rep-gen').textContent = document.getElementById('gen-students').value || "0";
 
             const genCount = parseFloat(genStudentsInput.value) || 0;
-            document.getElementById('rep-gen-fee').textContent = (genCount * 12.5).toFixed(0); // Rounded as per mockup
-            document.getElementById('rep-fee').textContent = Math.round(parseFloat(totalFeeDisplay.textContent));
+            const genFeeTot = genCount * 12.5;
+            document.getElementById('rep-gen-fee').textContent = Math.round(genFeeTot);
+
+            document.getElementById('rep-fee').textContent = Math.round(genFeeTot);
 
             // Show Preview and Print button
             previewEl.style.display = 'block';
@@ -166,7 +175,7 @@
             previewEl.scrollIntoView({ behavior: 'smooth' });
         });
 
-        // PRINT Logic (Works 100% for PDF)
+        // PRINT Logic
         printBtn.addEventListener('click', () => {
             window.print();
         });
