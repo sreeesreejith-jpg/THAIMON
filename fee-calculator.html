@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fee Calculator - GVHSS Thrikkothamangalam</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- jsPDF Library in Head for faster loading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Fee Calculator</h1>
+
+        <div class="form-group">
+            <label for="installment-type">Select Type</label>
+            <select id="installment-type">
+                <option value="" disabled selected>Choose an option</option>
+                <option value="first">First Installment</option>
+                <option value="second">Second Installment</option>
+                <option value="sslc-card">SSLC Card</option>
+                <option value="sslc-fees">SSLC Fees</option>
+                <option value="af-ff">AF/ff</option>
+            </select>
+        </div>
+
+        <div id="first-installment-fields" class="hidden">
+            <div class="form-group">
+                <label>Total No of Students</label>
+                <input type="number" id="total-students" value="0">
+            </div>
+            <div class="form-group">
+                <label>No of SC Students</label>
+                <input type="number" id="sc-students" value="0">
+            </div>
+            <div class="form-group">
+                <label>No of ST Students</label>
+                <input type="number" id="st-students" value="0">
+            </div>
+            <div class="form-group">
+                <label>No of OEC Students</label>
+                <input type="number" id="oec-students" value="0">
+            </div>
+            <div class="form-group">
+                <label>No of General Students</label>
+                <input type="number" id="gen-students" value="0">
+            </div>
+
+            <div id="calculation-result">
+                <p>Total Fees</p>
+                <div class="total-fee-val">₹ <span id="total-fee-amount">0.00</span></div>
+            </div>
+
+            <button id="show-report" class="btn pdf-btn">Show Final Report</button>
+            <button id="print-report" class="btn pdf-btn hidden">Print / Save as PDF</button>
+        </div>
+
+        <!-- Hidden Report for Printing and Preview -->
+        <div id="report-preview">
+            <div class="report-header-box">
+                <h2>GVHSS THRIKKOTHAMANGALAM</h2>
+            </div>
+            <div class="report-type-box">
+                <span id="rep-type-name"></span>
+            </div>
+            <div class="report-student-count">
+                Total No of Students: <span id="rep-total"></span>
+            </div>
+
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>category</th>
+                        <th>no of students</th>
+                        <th>fee</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>SC</td>
+                        <td id="rep-sc"></td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>ST</td>
+                        <td id="rep-st"></td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>OEC</td>
+                        <td id="rep-oec"></td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>General</td>
+                        <td id="rep-gen"></td>
+                        <td id="rep-gen-fee"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr class="report-footer-row">
+                        <td colspan="2">Total Fee</td>
+                        <td id="rep-fee"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="links">
+            <a href="index.html" class="btn back-btn">← Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        const typeSelect = document.getElementById('installment-type');
+        const firstFields = document.getElementById('first-installment-fields');
+        const genStudentsInput = document.getElementById('gen-students');
+        const totalFeeDisplay = document.getElementById('total-fee-amount');
+        const showBtn = document.getElementById('show-report');
+        const printBtn = document.getElementById('print-report');
+        const previewEl = document.getElementById('report-preview');
+
+        // Show/Hide fields
+        typeSelect.addEventListener('change', () => {
+            if (typeSelect.value === 'first') {
+                firstFields.classList.remove('hidden');
+                previewEl.style.display = 'none';
+                printBtn.classList.add('hidden');
+            } else {
+                firstFields.classList.add('hidden');
+            }
+        });
+
+        // Calculate Fees
+        const calculateFees = () => {
+            const genCount = parseFloat(genStudentsInput.value) || 0;
+            const fee = genCount * 12.5;
+            totalFeeDisplay.textContent = fee.toFixed(2);
+        };
+
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => input.addEventListener('input', calculateFees));
+
+        // SHOW REPORT Logic
+        showBtn.addEventListener('click', () => {
+            // Fill Preview Data
+            document.getElementById('rep-type-name').textContent = typeSelect.options[typeSelect.selectedIndex].text;
+            document.getElementById('rep-total').textContent = document.getElementById('total-students').value || "0";
+            document.getElementById('rep-sc').textContent = document.getElementById('sc-students').value || "0";
+            document.getElementById('rep-st').textContent = document.getElementById('st-students').value || "0";
+            document.getElementById('rep-oec').textContent = document.getElementById('oec-students').value || "0";
+            document.getElementById('rep-gen').textContent = document.getElementById('gen-students').value || "0";
+
+            const genCount = parseFloat(genStudentsInput.value) || 0;
+            document.getElementById('rep-gen-fee').textContent = (genCount * 12.5).toFixed(0); // Rounded as per mockup
+            document.getElementById('rep-fee').textContent = Math.round(parseFloat(totalFeeDisplay.textContent));
+
+            // Show Preview and Print button
+            previewEl.style.display = 'block';
+            printBtn.classList.remove('hidden');
+            previewEl.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // PRINT Logic (Works 100% for PDF)
+        printBtn.addEventListener('click', () => {
+            window.print();
+        });
+    </script>
+</body>
+
+</html>
