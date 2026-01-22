@@ -130,6 +130,8 @@ h1 {
     display: none;
     font-family: Arial, sans-serif;
     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .report-header-box {
@@ -170,8 +172,9 @@ h1 {
 .report-table th,
 .report-table td {
     border: 1px solid #000;
-    padding: 8px 15px;
+    padding: 8px 10px;
     text-align: left;
+    font-size: 0.85rem;
 }
 
 .report-table th {
@@ -185,7 +188,8 @@ h1 {
 .report-table th:nth-child(2),
 .report-table th:nth-child(3) {
     text-align: right;
-    width: 120px;
+    width: auto;
+    min-width: 60px;
 }
 
 .report-footer-row {
