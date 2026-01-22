@@ -79,7 +79,7 @@
                     <thead>
                         <tr>
                             <th>Category</th>
-                            <th>Count</th>
+                            <th>No. of Students</th>
                             <th>Rate</th>
                             <th>Total Fee</th>
                         </tr>
@@ -337,7 +337,7 @@
                 // Generate Table
                 doc.autoTable({
                     startY: 65,
-                    head: [['Category', 'Count', 'Rate (Rs.)', 'Total (Rs.)']],
+                    head: [['Category', 'No. of Students', 'Rate (Rs.)', 'Total (Rs.)']],
                     body: rows,
                     foot: [['', '', 'Final Total Fee', `Rs. ${totalFee.toFixed(2)}`]],
                     theme: 'striped',
