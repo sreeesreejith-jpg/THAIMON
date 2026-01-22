@@ -1,0 +1,16 @@
+{
+  "name": "Fee Calculator GVHSS",
+  "short_name": "Fee Calc",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#1a2a6c",
+  "theme_color": "#1a2a6c",
+  "icons": [
+    {
+      "src": "fee.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
