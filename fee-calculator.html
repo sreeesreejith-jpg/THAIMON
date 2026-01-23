@@ -291,6 +291,7 @@
                     const totalFee = (scCount * scRate) + (stCount * stRate) + (oecCount * oecRate) + (genCount * genRate);
 
                     console.log("Generating PDF content...");
+                    // Add School Name and Title to PDF
                     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
                     doc.setFontSize(22);
                     doc.setFont("helvetica", "bold");
@@ -301,13 +302,14 @@
                     doc.line(20, 30, 190, 30);
 
                     doc.setFontSize(16);
-                    doc.setTextColor(178, 31, 31);
+                    doc.setTextColor(178, 31, 31); // Reddish color for type
                     doc.text(typeName.toUpperCase(), 105, 45, { align: 'center' });
 
                     doc.setTextColor(0, 0, 0);
                     doc.setFontSize(12);
                     doc.text(`Date: ${new Date().toLocaleDateString()}`, 15, 55);
 
+                    // Generate Table
                     doc.autoTable({
                         startY: 65,
                         head: [['Category', 'No. of Students', 'Rate (Rs.)', 'Total (Rs.)']],
@@ -317,9 +319,14 @@
                         headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' },
                         footStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold', halign: 'right' },
                         styles: { fontSize: 11, cellPadding: 5 },
-                        columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
+                        columnStyles: {
+                            1: { halign: 'right' },
+                            2: { halign: 'right' },
+                            3: { halign: 'right' }
+                        }
                     });
 
+                    // Student Count Summary moved under table
                     const finalY = doc.lastAutoTable.finalY + 15;
                     doc.setTextColor(0, 0, 0);
                     doc.setFontSize(12);
@@ -327,12 +334,13 @@
                     doc.text(`Total Number of Students: ${totalStudents}`, 15, finalY);
 
                     const fileName = `Fee_Report_${Date.now()}.pdf`;
-                    console.log("PDF generated: " + fileName);
+                    console.log("PDF generated, preparing share...");
 
-                    // Native Sharing Logic (Capacitor)
-                    if (window.Capacitor && window.Capacitor.platform !== 'web') {
+                    // Check for Capacitor Native Plugins first
+                    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                         console.log("Running in Native Platform");
                         const { Share, Filesystem } = window.Capacitor.Plugins;
+
                         if (Share && Filesystem) {
                             try {
                                 const pdfBase64 = doc.output('datauristring').split(',')[1];
@@ -352,39 +360,35 @@
                                 console.log("Native share triggered");
                                 return;
                             } catch (err) {
-                                console.error("Native sharing plugin error:", err);
+                                console.error("Native share failed:", err);
+                                // Continue to web fallback
                             }
-                        } else {
-                            console.warn("Share or Filesystem plugin missing in Native mode.");
                         }
                     }
 
-                    // Web Sharing Fallback (navigator.share)
+                    // Web and Fallback Share Logic
                     console.log("Using Web/Browser share fallback");
                     const pdfBlob = doc.output('blob');
                     const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-                        try {
-                            await navigator.share({
-                                files: [pdfFile],
-                                title: 'Fee Calculation Report',
-                                text: `Fee report for ${typeName}`
-                            });
-                            return;
-                        } catch (err) {
-                            console.error("Web share failed:", err);
+                        await navigator.share({
+                            files: [pdfFile],
+                            title: 'Fee Calculation Report',
+                            text: `Fee report for ${typeName}`
+                        });
+                    } else {
+                        console.log("Navigator share not available, opening print/tab");
+                        const pdfDataUri = doc.output('datauristring');
+                        const newWindow = window.open(pdfDataUri, '_blank');
+                        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                            alert("Sharing not supported. Attempting to bring up Print dialog...");
+                            window.print();
                         }
                     }
-
-                    // Extreme Fallback: Trigger Print
-                    console.log("Falling back to Print dialog");
-                    alert("Sharing not supported directly. Opening Print dialog where you can 'Save as PDF' or Print.");
-                    window.print();
-
                 } catch (err) {
-                    console.error("Critical failure in sharing:", err);
-                    alert("Error: " + err.message);
+                    console.error("Critical PDF failure:", err);
+                    alert("Report Error: " + err.message);
                 }
             });
         </script>
