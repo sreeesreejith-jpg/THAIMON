@@ -75,31 +75,27 @@ h1 {
 }
 
 .school-name-input {
-    font-size: 2.5rem;
-    margin-bottom: 30px;
-    font-weight: 800;
-    letter-spacing: -1px;
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
     color: #fff;
-    /* Solid white color */
-    background: transparent;
-    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
     text-align: center;
     width: 100%;
     outline: none;
     caret-color: white;
-    padding: 0;
+    padding: 12px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    /* Subtle shadow for better readability */
-}
-
-.school-name-input::placeholder {
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
-    opacity: 1;
+    transition: all 0.3s ease;
 }
 
 .school-name-input:focus {
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: none;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 15px rgba(253, 187, 45, 0.2);
 }
 
 @media (max-width: 480px) {

@@ -66,7 +66,7 @@
             </div>
 
             <button id="show-report" class="btn pdf-btn">Show Final Report</button>
-            <button id="share-report" class="btn pdf-btn hidden">Share Report</button>
+            <button id="share-report" class="btn pdf-btn">Share Report</button>
 
             <!-- Hidden Report for Printing and Preview -->
             <div id="report-preview">
@@ -107,7 +107,7 @@
                         <tr id="row-gen">
                             <td>General</td>
                             <td id="rep-gen"></td>
-                            <td>12.50</td>
+                            <td id="rep-gen-rate">12.00</td>
                             <td id="rep-gen-fee"></td>
                         </tr>
                         <tr class="report-footer-row">
@@ -177,39 +177,60 @@
                 const currencySymbol = document.getElementById('currency-symbol');
                 const feeLabel = document.getElementById('fee-label');
 
-                if (totalCount === 0) {
-                    if (feeLabel) feeLabel.textContent = "Total Fees";
-                    totalFeeDisplay.textContent = "0.00";
-                    totalFeeDisplay.style.color = "";
-                    totalFeeDisplay.style.fontSize = "";
-                    if (currencySymbol) currencySymbol.style.display = "inline";
-                    showBtn.disabled = true;
-                    showBtn.style.cursor = "not-allowed";
-                    showBtn.style.opacity = "0.6";
-                    shareBtn.classList.add('hidden');
+                let fee = 0;
+                const type = typeSelect.value;
+                let scRate = 0, stRate = 0, oecRate = 0, genRate = 0;
+
+                if (type === 'sslc-card') {
+                    genRate = 15;
+                } else if (type === 'sslc-fees') {
+                    genRate = 30;
+                } else if (type === 'af-ff') {
+                    oecRate = 17;
+                    genRate = 17;
                 } else {
-                    if (feeLabel) feeLabel.textContent = "Total Fees";
+                    genRate = 12; // Updated to 12 as per user example
+                }
 
-                    let fee = 0;
-                    const type = typeSelect.value;
+                fee = (scCount * scRate) + (stCount * stRate) + (oecCount * oecRate) + (genCount * genRate);
 
-                    if (type === 'sslc-card') {
-                        fee = genCount * 15;
-                    } else if (type === 'sslc-fees') {
-                        fee = genCount * 30;
-                    } else if (type === 'af-ff') {
-                        fee = (genCount + oecCount) * 17;
-                    } else {
-                        fee = genCount * 12.5;
-                    }
+                totalFeeDisplay.textContent = fee.toFixed(2);
 
-                    totalFeeDisplay.textContent = fee.toFixed(2);
-                    totalFeeDisplay.style.color = "";
-                    totalFeeDisplay.style.fontSize = "";
-                    if (currencySymbol) currencySymbol.style.display = "inline";
+                // Update Preview Data Dynamically
+                if (type) {
+                    document.getElementById('rep-type-name').textContent = typeSelect.options[typeSelect.selectedIndex].text;
+                    document.getElementById('rep-total').textContent = totalCount;
+
+                    document.getElementById('rep-sc').textContent = scCount;
+                    document.getElementById('rep-sc-fee').textContent = (scCount * scRate).toFixed(2);
+                    document.getElementById('row-sc').style.display = scCount > 0 ? '' : 'none';
+
+                    document.getElementById('rep-st').textContent = stCount;
+                    document.getElementById('rep-st-fee').textContent = (stCount * stRate).toFixed(2);
+                    document.getElementById('row-st').style.display = stCount > 0 ? '' : 'none';
+
+                    document.getElementById('rep-oec').textContent = oecCount;
+                    document.getElementById('rep-oec-fee').textContent = (oecCount * oecRate).toFixed(2);
+                    document.getElementById('row-oec').style.display = oecCount > 0 ? '' : 'none';
+
+                    document.getElementById('rep-gen').textContent = genCount;
+                    document.getElementById('rep-gen-fee').textContent = (genCount * genRate).toFixed(2);
+                    document.getElementById('rep-gen-rate').textContent = genRate.toFixed(2);
+                    document.getElementById('row-gen').style.display = genCount > 0 ? '' : 'none';
+
+                    document.getElementById('rep-fee').textContent = fee.toFixed(2);
+                }
+
+                if (totalCount === 0) {
+                    showBtn.disabled = true;
+                    showBtn.style.opacity = "0.6";
+                    shareBtn.disabled = true;
+                    shareBtn.style.opacity = "0.6";
+                } else {
                     showBtn.disabled = false;
-                    showBtn.style.cursor = "pointer";
                     showBtn.style.opacity = "1";
+                    shareBtn.disabled = false;
+                    shareBtn.style.opacity = "1";
                 }
             };
 
@@ -228,59 +249,8 @@
 
             // SHOW REPORT Logic
             showBtn.addEventListener('click', () => {
-                const type = typeSelect.value;
-                const reportTableBody = document.querySelector('#report-preview tbody');
-
-                // Fill Preview Data
-                document.getElementById('rep-type-name').textContent = typeSelect.options[typeSelect.selectedIndex].text;
-                document.getElementById('rep-total').textContent = document.getElementById('total-students').value || "0";
-
-                const scCount = parseFloat(document.getElementById('sc-students').value) || 0;
-                const stCount = parseFloat(document.getElementById('st-students').value) || 0;
-                const oecCount = parseFloat(document.getElementById('oec-students').value) || 0;
-                const genCount = parseFloat(document.getElementById('gen-students').value) || 0;
-
-                let scRate = 0, stRate = 0, oecRate = 0, genRate = 0;
-
-                if (type === 'sslc-card') {
-                    genRate = 15;
-                } else if (type === 'sslc-fees') {
-                    genRate = 30;
-                } else if (type === 'af-ff') {
-                    oecRate = 17;
-                    genRate = 17;
-                } else {
-                    genRate = 12.5;
-                }
-
-                // Update Preview Rows and Hide if Zero
-                const rowSc = document.getElementById('row-sc');
-                const rowSt = document.getElementById('row-st');
-                const rowOec = document.getElementById('row-oec');
-                const rowGen = document.getElementById('row-gen');
-
-                rowSc.style.display = scCount > 0 ? '' : 'none';
-                document.getElementById('rep-sc-fee').textContent = (scCount * scRate).toFixed(2);
-                document.getElementById('rep-sc').textContent = scCount;
-
-                rowSt.style.display = stCount > 0 ? '' : 'none';
-                document.getElementById('rep-st-fee').textContent = (stCount * stRate).toFixed(2);
-                document.getElementById('rep-st').textContent = stCount;
-
-                rowOec.style.display = oecCount > 0 ? '' : 'none';
-                document.getElementById('rep-oec-fee').textContent = (oecCount * oecRate).toFixed(2);
-                document.getElementById('rep-oec').textContent = oecCount;
-
-                rowGen.style.display = genCount > 0 ? '' : 'none';
-                document.getElementById('rep-gen-fee').textContent = (genCount * genRate).toFixed(2);
-                document.getElementById('rep-gen').textContent = genCount;
-
-                const totalFee = (scCount * scRate) + (stCount * stRate) + (oecCount * oecRate) + (genCount * genRate);
-                document.getElementById('rep-fee').textContent = totalFee.toFixed(2);
-
-                // Show Preview and Share button
+                // Show Preview
                 previewEl.style.display = 'block';
-                shareBtn.classList.remove('hidden');
                 previewEl.scrollIntoView({ behavior: 'smooth' });
             });
 
@@ -310,7 +280,7 @@
                         oecRate = 17;
                         genRate = 17;
                     } else {
-                        genRate = 12.5;
+                        genRate = 12;
                     }
 
                     // Build Table Rows (Only > 0)
