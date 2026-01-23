@@ -65,6 +65,15 @@ h1 {
     -webkit-text-fill-color: transparent;
 }
 
+.input-label {
+    display: block;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 5px;
+    font-weight: 600;
+    text-align: center;
+}
+
 .school-name-input {
     font-size: 2.5rem;
     margin-bottom: 30px;

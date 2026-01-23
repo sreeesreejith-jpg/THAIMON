@@ -17,12 +17,14 @@
 
 <body>
     <div class="container fade-in">
-        <input type="text" id="school-name-input" class="school-name-input" placeholder="Enter School Name">
+        <label for="school-name-input" class="input-label">Please enter school name</label>
+        <input type="text" id="school-name-input" class="school-name-input" placeholder="School Name Here">
         <div class="links">
             <a href="fee-calculator.html" class="btn">Fee Calculator</a>
         </div>
     </div>
 
+    <script src="capacitor.js"></script>
     <script>
         const schoolNameInput = document.getElementById('school-name-input');
 
@@ -31,8 +33,6 @@
         if (savedName) {
             schoolNameInput.value = savedName;
             document.title = savedName;
-        } else {
-            schoolNameInput.value = ""; // Default empty
         }
 
         // Save on change
@@ -41,6 +41,16 @@
             localStorage.setItem('schoolName', name);
             document.title = name || 'School App';
         });
+
+        // Handle Back Button
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+            const { App } = window.Capacitor.Plugins;
+            if (App) {
+                App.addListener('backButton', () => {
+                    App.exitApp();
+                });
+            }
+        }
     </script>
 </body>
 
