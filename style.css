@@ -93,6 +93,12 @@ h1 {
     box-shadow: none;
 }
 
+@media (max-width: 480px) {
+    .school-name-input {
+        font-size: 1.5rem;
+    }
+}
+
 .top-nav {
     display: flex;
     justify-content: flex-end;
