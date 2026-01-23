@@ -121,6 +121,8 @@
             </div>
         </div>
 
+        <!-- Capacitor JavaScript (if running as an app) -->
+        <script src="capacitor.js"></script>
         <script>
             const typeSelect = document.getElementById('installment-type');
             const firstFields = document.getElementById('first-installment-fields');
@@ -287,106 +289,143 @@
 
             // PDF Generation and Sharing
             shareBtn.addEventListener('click', async () => {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                const primaryColor = [26, 42, 108]; // Dark blue #1a2a6c
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const primaryColor = [26, 42, 108]; // Dark blue #1a2a6c
 
-                const type = typeSelect.value;
-                const typeName = typeSelect.options[typeSelect.selectedIndex].text;
-                const totalStudents = document.getElementById('total-students').value || "0";
+                    const type = typeSelect.value;
+                    const typeName = typeSelect.options[typeSelect.selectedIndex].text;
+                    const totalStudents = document.getElementById('total-students').value || "0";
 
-                const scCount = parseFloat(document.getElementById('sc-students').value) || 0;
-                const stCount = parseFloat(document.getElementById('st-students').value) || 0;
-                const oecCount = parseFloat(document.getElementById('oec-students').value) || 0;
-                const genCount = parseFloat(genStudentsInput.value) || 0;
+                    const scCount = parseFloat(document.getElementById('sc-students').value) || 0;
+                    const stCount = parseFloat(document.getElementById('st-students').value) || 0;
+                    const oecCount = parseFloat(document.getElementById('oec-students').value) || 0;
+                    const genCount = parseFloat(genStudentsInput.value) || 0;
 
-                let scRate = 0, stRate = 0, oecRate = 0, genRate = 0;
+                    let scRate = 0, stRate = 0, oecRate = 0, genRate = 0;
 
-                if (type === 'sslc-card') {
-                    genRate = 15;
-                } else if (type === 'sslc-fees') {
-                    genRate = 30;
-                } else if (type === 'af-ff') {
-                    oecRate = 17;
-                    genRate = 17;
-                } else {
-                    genRate = 12.5;
-                }
-
-                // Header
-                doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-                doc.rect(0, 0, 210, 40, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(22);
-                doc.setFont("helvetica", "bold");
-                doc.setFont("helvetica", "bold");
-                const pdfSchoolName = (localStorage.getItem('schoolName') || 'GVHSS THRIKKOTHAMANGALAM').toUpperCase();
-                doc.text(pdfSchoolName, 105, 20, { align: "center" });
-                doc.setFontSize(14);
-                doc.text("FEE CALCULATION REPORT", 105, 30, { align: "center" });
-
-                // Report Details Section
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(12);
-                doc.setFont("helvetica", "bold");
-                doc.text(`Type: ${typeName}`, 15, 55);
-                doc.text(`Date: ${new Date().toLocaleDateString()}`, 195, 55, { align: "right" });
-
-                // Table Data
-                const rows = [
-                    ["SC", scCount, scRate.toFixed(2), (scCount * scRate).toFixed(2)],
-                    ["ST", stCount, stRate.toFixed(2), (stCount * stRate).toFixed(2)],
-                    ["OEC", oecCount, oecRate.toFixed(2), (oecCount * oecRate).toFixed(2)],
-                    ["General", genCount, genRate.toFixed(2), (genCount * genRate).toFixed(2)]
-                ];
-
-                const totalFee = (scCount * scRate) + (stCount * stRate) + (oecCount * oecRate) + (genCount * genRate);
-
-                // Generate Table
-                doc.autoTable({
-                    startY: 65,
-                    head: [['Category', 'No. of Students', 'Rate (Rs.)', 'Total (Rs.)']],
-                    body: rows,
-                    foot: [['', '', 'Final Total Fee', `Rs. ${totalFee.toFixed(2)}`]],
-                    theme: 'striped',
-                    headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' },
-                    footStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold', halign: 'right' },
-                    styles: { fontSize: 11, cellPadding: 5 },
-                    columnStyles: {
-                        1: { halign: 'right' },
-                        2: { halign: 'right' },
-                        3: { halign: 'right' }
+                    if (type === 'sslc-card') {
+                        genRate = 15;
+                    } else if (type === 'sslc-fees') {
+                        genRate = 30;
+                    } else if (type === 'af-ff') {
+                        oecRate = 17;
+                        genRate = 17;
+                    } else {
+                        genRate = 12.5;
                     }
-                });
 
-                // Student Count Summary moved under table
-                const finalY = doc.lastAutoTable.finalY + 15;
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(12);
-                doc.setFont("helvetica", "bold");
-                doc.text(`Total Number of Students: ${totalStudents}`, 15, finalY);
+                    // Header
+                    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                    doc.rect(0, 0, 210, 40, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(22);
+                    doc.setFont("helvetica", "bold");
+                    const pdfSchoolName = (localStorage.getItem('schoolName') || 'GVHSS THRIKKOTHAMANGALAM').toUpperCase();
+                    doc.text(pdfSchoolName, 105, 20, { align: "center" });
+                    doc.setFontSize(14);
+                    doc.text("FEE CALCULATION REPORT", 105, 30, { align: "center" });
 
-                const pdfBlob = doc.output('blob');
-                const pdfFile = new File([pdfBlob], `Fee_Report_${Date.now()}.pdf`, { type: 'application/pdf' });
+                    // Report Details Section
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`Type: ${typeName}`, 15, 55);
+                    doc.text(`Date: ${new Date().toLocaleDateString()}`, 195, 55, { align: "right" });
 
-                // Share or Download
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-                    try {
+                    // Table Data
+                    const rows = [
+                        ["SC", scCount, scRate.toFixed(2), (scCount * scRate).toFixed(2)],
+                        ["ST", stCount, stRate.toFixed(2), (stCount * stRate).toFixed(2)],
+                        ["OEC", oecCount, oecRate.toFixed(2), (oecCount * oecRate).toFixed(2)],
+                        ["General", genCount, genRate.toFixed(2), (genCount * genRate).toFixed(2)]
+                    ];
+
+                    const totalFee = (scCount * scRate) + (stCount * stRate) + (oecCount * oecRate) + (genCount * genRate);
+
+                    // Generate Table
+                    doc.autoTable({
+                        startY: 65,
+                        head: [['Category', 'No. of Students', 'Rate (Rs.)', 'Total (Rs.)']],
+                        body: rows,
+                        foot: [['', '', 'Final Total Fee', `Rs. ${totalFee.toFixed(2)}`]],
+                        theme: 'striped',
+                        headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' },
+                        footStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold', halign: 'right' },
+                        styles: { fontSize: 11, cellPadding: 5 },
+                        columnStyles: {
+                            1: { halign: 'right' },
+                            2: { halign: 'right' },
+                            3: { halign: 'right' }
+                        }
+                    });
+
+                    // Student Count Summary moved under table
+                    const finalY = doc.lastAutoTable.finalY + 15;
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`Total Number of Students: ${totalStudents}`, 15, finalY);
+
+                    const fileName = `Fee_Report_${Date.now()}.pdf`;
+
+                    // Check for Capacitor Native Plugins first
+                    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                        const { Share, Filesystem } = window.Capacitor.Plugins;
+
+                        if (Share && Filesystem) {
+                            try {
+                                const pdfBase64 = doc.output('datauristring').split(',')[1];
+                                const result = await Filesystem.writeFile({
+                                    path: fileName,
+                                    data: pdfBase64,
+                                    directory: 'CACHE'
+                                });
+
+                                await Share.share({
+                                    title: 'Fee Calculation Report',
+                                    text: `Fee report for ${typeName}`,
+                                    url: result.uri,
+                                    dialogTitle: 'Share Report'
+                                });
+                                return;
+                            } catch (err) {
+                                console.error("Native share failed:", err);
+                                // Continue to web fallback
+                            }
+                        } else {
+                            console.warn("Capacitor plugins not available. Please install @capacitor/share and @capacitor/filesystem.");
+                        }
+                    }
+
+                    // Web and Fallback Share Logic
+                    const pdfBlob = doc.output('blob');
+                    const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
                         await navigator.share({
                             files: [pdfFile],
                             title: 'Fee Calculation Report',
                             text: `Fee report for ${typeName}`
                         });
-                    } catch (err) {
-                        if (err.name !== 'AbortError') {
-                            doc.save(`Fee_Report_${typeName}.pdf`);
+                    } else {
+                        // Fallback: This works better in most WebViews than window.print()
+                        const pdfDataUri = doc.output('datauristring');
+                        const newWindow = window.open(pdfDataUri, '_blank');
+                        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                            // If popup blocked, use doc.save() or print
+                            alert("Sharing not supported on this device. Please use Print to save as PDF.");
+                            window.print();
                         }
                     }
-                } else {
-                    doc.save(`Fee_Report_${typeName}.pdf`);
+                } catch (err) {
+                    console.error("PDF generation/sharing failed:", err);
+                    alert("An error occurred while generating the report. Please try again.");
                 }
             });
         </script>
+
 </body>
 
 </html>
