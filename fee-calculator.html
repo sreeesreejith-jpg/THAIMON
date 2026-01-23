@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fee Calculator - GVHSS Thrikkothamangalam</title>
+    <title>Fee Calculator</title>
     <link rel="stylesheet" href="style.css">
     <!-- jsPDF Library in Head for faster loading -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -70,7 +70,7 @@
             <!-- Hidden Report for Printing and Preview -->
             <div id="report-preview">
                 <div class="report-header-box">
-                    <h2>GVHSS THRIKKOTHAMANGALAM</h2>
+                    <h2 id="report-school-name">GVHSS THRIKKOTHAMANGALAM</h2>
                 </div>
                 <div class="report-type-box">
                     <span id="rep-type-name"></span>
@@ -129,6 +129,12 @@
             const showBtn = document.getElementById('show-report');
             const shareBtn = document.getElementById('share-report');
             const previewEl = document.getElementById('report-preview');
+            const reportSchoolName = document.getElementById('report-school-name');
+
+            // Load School Name
+            const savedSchoolName = localStorage.getItem('schoolName') || 'GVHSS Thrikkothamangalam';
+            document.title = `Fee Calculator - ${savedSchoolName}`;
+            reportSchoolName.textContent = savedSchoolName.toUpperCase();
 
             // Show/Hide fields
             typeSelect.addEventListener('change', () => {
@@ -313,7 +319,9 @@
                 doc.setTextColor(255, 255, 255);
                 doc.setFontSize(22);
                 doc.setFont("helvetica", "bold");
-                doc.text("GVHSS THRIKKOTHAMANGALAM", 105, 20, { align: "center" });
+                doc.setFont("helvetica", "bold");
+                const pdfSchoolName = (localStorage.getItem('schoolName') || 'GVHSS THRIKKOTHAMANGALAM').toUpperCase();
+                doc.text(pdfSchoolName, 105, 20, { align: "center" });
                 doc.setFontSize(14);
                 doc.text("FEE CALCULATION REPORT", 105, 30, { align: "center" });
 

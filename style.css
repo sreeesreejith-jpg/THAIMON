@@ -65,6 +65,34 @@ h1 {
     -webkit-text-fill-color: transparent;
 }
 
+.school-name-input {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #fff;
+    /* Solid white color */
+    background: transparent;
+    border: none;
+    text-align: center;
+    width: 100%;
+    outline: none;
+    caret-color: white;
+    padding: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow for better readability */
+}
+
+.school-name-input::placeholder {
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+}
+
+.school-name-input:focus {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+}
+
 .top-nav {
     display: flex;
     justify-content: flex-end;

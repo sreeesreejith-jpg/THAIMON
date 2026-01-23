@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GVHSS Thrikkothamangalam</title>
+    <title>School App</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,12 +14,34 @@
     <link rel="apple-touch-icon" href="fee.png">
     <meta name="theme-color" content="#1a2a6c">
 </head>
+
 <body>
     <div class="container fade-in">
-        <h1>GVHSS Thrikkothamangalam HS Section</h1>
+        <input type="text" id="school-name-input" class="school-name-input" placeholder="Enter School Name">
         <div class="links">
             <a href="fee-calculator.html" class="btn">Fee Calculator</a>
         </div>
     </div>
+
+    <script>
+        const schoolNameInput = document.getElementById('school-name-input');
+
+        // Load saved name
+        const savedName = localStorage.getItem('schoolName');
+        if (savedName) {
+            schoolNameInput.value = savedName;
+            document.title = savedName;
+        } else {
+            schoolNameInput.value = "GVHSS Thrikkothamangalam"; // Default
+        }
+
+        // Save on change
+        schoolNameInput.addEventListener('input', (e) => {
+            const name = e.target.value;
+            localStorage.setItem('schoolName', name);
+            document.title = name || 'School App';
+        });
+    </script>
 </body>
+
 </html>
