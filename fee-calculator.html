@@ -254,6 +254,7 @@
 
             // PDF Generation and Sharing
             shareBtn.addEventListener('click', async () => {
+                console.log("Share button clicked");
                 try {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
@@ -289,6 +290,25 @@
 
                     const totalFee = (scCount * scRate) + (stCount * stRate) + (oecCount * oecRate) + (genCount * genRate);
 
+                    console.log("Generating PDF content...");
+                    // Add School Name and Title to PDF
+                    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                    doc.setFontSize(22);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(savedSchoolName.toUpperCase(), 105, 25, { align: 'center' });
+
+                    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                    doc.setLineWidth(1);
+                    doc.line(20, 30, 190, 30);
+
+                    doc.setFontSize(16);
+                    doc.setTextColor(178, 31, 31); // Reddish color for type
+                    doc.text(typeName.toUpperCase(), 105, 45, { align: 'center' });
+
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFontSize(12);
+                    doc.text(`Date: ${new Date().toLocaleDateString()}`, 15, 55);
+
                     // Generate Table
                     doc.autoTable({
                         startY: 65,
@@ -314,9 +334,11 @@
                     doc.text(`Total Number of Students: ${totalStudents}`, 15, finalY);
 
                     const fileName = `Fee_Report_${Date.now()}.pdf`;
+                    console.log("PDF generated, preparing share...");
 
                     // Check for Capacitor Native Plugins first
                     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                        console.log("Running in Native Platform");
                         const { Share, Filesystem } = window.Capacitor.Plugins;
 
                         if (Share && Filesystem) {
@@ -327,6 +349,7 @@
                                     data: pdfBase64,
                                     directory: 'CACHE'
                                 });
+                                console.log("File written to cache: " + result.uri);
 
                                 await Share.share({
                                     title: 'Fee Calculation Report',
@@ -334,17 +357,17 @@
                                     url: result.uri,
                                     dialogTitle: 'Share Report'
                                 });
+                                console.log("Native share triggered");
                                 return;
                             } catch (err) {
                                 console.error("Native share failed:", err);
                                 // Continue to web fallback
                             }
-                        } else {
-                            console.warn("Capacitor plugins not available. Please install @capacitor/share and @capacitor/filesystem.");
                         }
                     }
 
                     // Web and Fallback Share Logic
+                    console.log("Using Web/Browser share fallback");
                     const pdfBlob = doc.output('blob');
                     const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
@@ -355,18 +378,17 @@
                             text: `Fee report for ${typeName}`
                         });
                     } else {
-                        // Fallback: This works better in most WebViews than window.print()
+                        console.log("Navigator share not available, opening print/tab");
                         const pdfDataUri = doc.output('datauristring');
                         const newWindow = window.open(pdfDataUri, '_blank');
                         if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-                            // If popup blocked, use doc.save() or print
-                            alert("Sharing not supported on this device. Please use Print to save as PDF.");
+                            alert("Sharing not supported. Attempting to bring up Print dialog...");
                             window.print();
                         }
                     }
                 } catch (err) {
-                    console.error("PDF generation/sharing failed:", err);
-                    alert("An error occurred while generating the report. Please try again.");
+                    console.error("Critical PDF failure:", err);
+                    alert("Report Error: " + err.message);
                 }
             });
         </script>
