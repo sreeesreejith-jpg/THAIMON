@@ -378,11 +378,12 @@
                             text: `Fee report for ${typeName}`
                         });
                     } else {
-                        console.log("Navigator share not available, opening print/tab");
-                        const pdfDataUri = doc.output('datauristring');
-                        const newWindow = window.open(pdfDataUri, '_blank');
-                        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-                            alert("Sharing not supported. Attempting to bring up Print dialog...");
+                        console.log("Navigator share not available, downloading file");
+                        // Use doc.save() instead of window.open() to avoid about:blank issues
+                        try {
+                            doc.save(fileName);
+                        } catch (saveErr) {
+                            console.error("Save failed, triggering print", saveErr);
                             window.print();
                         }
                     }
