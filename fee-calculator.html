@@ -55,7 +55,8 @@
             </div>
             <div class="form-group">
                 <label>Total No of Students</label>
-                <input type="number" id="total-students" value="0">
+                <input type="number" id="total-students" value="0" readonly
+                    style="background: rgba(255, 255, 255, 0.1); cursor: not-allowed;">
             </div>
 
             <div id="calculation-result">
@@ -85,25 +86,25 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                        <tr id="row-sc">
                             <td>SC</td>
                             <td id="rep-sc"></td>
                             <td>0.00</td>
                             <td id="rep-sc-fee"></td>
                         </tr>
-                        <tr>
+                        <tr id="row-st">
                             <td>ST</td>
                             <td id="rep-st"></td>
                             <td>0.00</td>
                             <td id="rep-st-fee"></td>
                         </tr>
-                        <tr>
+                        <tr id="row-oec">
                             <td>OEC</td>
                             <td id="rep-oec"></td>
                             <td>0.00</td>
                             <td id="rep-oec-fee"></td>
                         </tr>
-                        <tr>
+                        <tr id="row-gen">
                             <td>General</td>
                             <td id="rep-gen"></td>
                             <td>12.50</td>
@@ -164,13 +165,15 @@
                 const oecCountInput = document.getElementById('oec-students');
                 const genCountInput = document.getElementById('gen-students');
 
-                const totalCount = parseInt(totalCountInput.value) || 0;
                 const scCount = parseInt(scCountInput.value) || 0;
                 const stCount = parseInt(stCountInput.value) || 0;
                 const oecCount = parseInt(oecCountInput.value) || 0;
                 const genCount = parseInt(genCountInput.value) || 0;
 
-                const sum = scCount + stCount + oecCount + genCount;
+                // Sync Total Count
+                const totalCount = scCount + stCount + oecCount + genCount;
+                totalCountInput.value = totalCount;
+
                 const currencySymbol = document.getElementById('currency-symbol');
                 const feeLabel = document.getElementById('fee-label');
 
@@ -184,16 +187,6 @@
                     showBtn.style.cursor = "not-allowed";
                     showBtn.style.opacity = "0.6";
                     shareBtn.classList.add('hidden');
-                } else if (sum !== totalCount) {
-                    if (feeLabel) feeLabel.textContent = "Status";
-                    totalFeeDisplay.textContent = "Mismatch in no. of students";
-                    totalFeeDisplay.style.color = "#ff4d4d";
-                    totalFeeDisplay.style.fontSize = "1.2rem";
-                    if (currencySymbol) currencySymbol.style.display = "none";
-                    showBtn.disabled = true;
-                    showBtn.style.cursor = "not-allowed";
-                    showBtn.style.opacity = "0.6";
-                    shareBtn.classList.add('hidden');
                 } else {
                     if (feeLabel) feeLabel.textContent = "Total Fees";
 
@@ -201,16 +194,12 @@
                     const type = typeSelect.value;
 
                     if (type === 'sslc-card') {
-                        // General 15, SC/ST/OEC 0
                         fee = genCount * 15;
                     } else if (type === 'sslc-fees') {
-                        // General 30, SC/ST/OEC 0
                         fee = genCount * 30;
                     } else if (type === 'af-ff') {
-                        // General 17, OEC 17, SC/ST 0
                         fee = (genCount + oecCount) * 17;
                     } else {
-                        // Default (Installments): General 12.5, SC/ST/OEC 0
                         fee = genCount * 12.5;
                     }
 
@@ -221,7 +210,6 @@
                     showBtn.disabled = false;
                     showBtn.style.cursor = "pointer";
                     showBtn.style.opacity = "1";
-                    shareBtn.classList.remove('hidden');
                 }
             };
 
@@ -255,26 +243,25 @@
                     genRate = 12.5;
                 }
 
-                // Update Preview Rows
-                const rows = reportTableBody.querySelectorAll('tr:not(.report-footer-row)');
+                // Update Preview Rows and Hide if Zero
+                const rowSc = document.getElementById('row-sc');
+                const rowSt = document.getElementById('row-st');
+                const rowOec = document.getElementById('row-oec');
+                const rowGen = document.getElementById('row-gen');
 
-                // SC Row
-                rows[0].cells[2].textContent = scRate.toFixed(2);
+                rowSc.style.display = scCount > 0 ? '' : 'none';
                 document.getElementById('rep-sc-fee').textContent = (scCount * scRate).toFixed(2);
                 document.getElementById('rep-sc').textContent = scCount;
 
-                // ST Row
-                rows[1].cells[2].textContent = stRate.toFixed(2);
+                rowSt.style.display = stCount > 0 ? '' : 'none';
                 document.getElementById('rep-st-fee').textContent = (stCount * stRate).toFixed(2);
                 document.getElementById('rep-st').textContent = stCount;
 
-                // OEC Row
-                rows[2].cells[2].textContent = oecRate.toFixed(2);
+                rowOec.style.display = oecCount > 0 ? '' : 'none';
                 document.getElementById('rep-oec-fee').textContent = (oecCount * oecRate).toFixed(2);
                 document.getElementById('rep-oec').textContent = oecCount;
 
-                // Gen Row
-                rows[3].cells[2].textContent = genRate.toFixed(2);
+                rowGen.style.display = genCount > 0 ? '' : 'none';
                 document.getElementById('rep-gen-fee').textContent = (genCount * genRate).toFixed(2);
                 document.getElementById('rep-gen').textContent = genCount;
 
@@ -316,31 +303,12 @@
                         genRate = 12.5;
                     }
 
-                    // Header
-                    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-                    doc.rect(0, 0, 210, 40, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(22);
-                    doc.setFont("helvetica", "bold");
-                    const pdfSchoolName = (localStorage.getItem('schoolName') || 'GVHSS THRIKKOTHAMANGALAM').toUpperCase();
-                    doc.text(pdfSchoolName, 105, 20, { align: "center" });
-                    doc.setFontSize(14);
-                    doc.text("FEE CALCULATION REPORT", 105, 30, { align: "center" });
-
-                    // Report Details Section
-                    doc.setTextColor(0, 0, 0);
-                    doc.setFontSize(12);
-                    doc.setFont("helvetica", "bold");
-                    doc.text(`Type: ${typeName}`, 15, 55);
-                    doc.text(`Date: ${new Date().toLocaleDateString()}`, 195, 55, { align: "right" });
-
-                    // Table Data
-                    const rows = [
-                        ["SC", scCount, scRate.toFixed(2), (scCount * scRate).toFixed(2)],
-                        ["ST", stCount, stRate.toFixed(2), (stCount * stRate).toFixed(2)],
-                        ["OEC", oecCount, oecRate.toFixed(2), (oecCount * oecRate).toFixed(2)],
-                        ["General", genCount, genRate.toFixed(2), (genCount * genRate).toFixed(2)]
-                    ];
+                    // Build Table Rows (Only > 0)
+                    const rows = [];
+                    if (scCount > 0) rows.push(["SC", scCount, scRate.toFixed(2), (scCount * scRate).toFixed(2)]);
+                    if (stCount > 0) rows.push(["ST", stCount, stRate.toFixed(2), (stCount * stRate).toFixed(2)]);
+                    if (oecCount > 0) rows.push(["OEC", oecCount, oecRate.toFixed(2), (oecCount * oecRate).toFixed(2)]);
+                    if (genCount > 0) rows.push(["General", genCount, genRate.toFixed(2), (genCount * genRate).toFixed(2)]);
 
                     const totalFee = (scCount * scRate) + (stCount * stRate) + (oecCount * oecRate) + (genCount * genRate);
 
