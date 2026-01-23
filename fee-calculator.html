@@ -153,7 +153,6 @@
                     firstFields.classList.add('hidden');
                 }
                 previewEl.style.display = 'none';
-                shareBtn.classList.add('hidden');
                 calculateFees();
             });
 
@@ -182,14 +181,13 @@
                 let scRate = 0, stRate = 0, oecRate = 0, genRate = 0;
 
                 if (type === 'sslc-card') {
-                    genRate = 15;
+                    scRate = stRate = oecRate = genRate = 15;
                 } else if (type === 'sslc-fees') {
-                    genRate = 30;
+                    scRate = stRate = oecRate = genRate = 30;
                 } else if (type === 'af-ff') {
-                    oecRate = 17;
-                    genRate = 17;
+                    scRate = stRate = oecRate = genRate = 17;
                 } else {
-                    genRate = 12; // Updated to 12 as per user example
+                    scRate = stRate = oecRate = genRate = 12; // Default rate for installments
                 }
 
                 fee = (scCount * scRate) + (stCount * stRate) + (oecCount * oecRate) + (genCount * genRate);
@@ -273,14 +271,13 @@
                     let scRate = 0, stRate = 0, oecRate = 0, genRate = 0;
 
                     if (type === 'sslc-card') {
-                        genRate = 15;
+                        scRate = stRate = oecRate = genRate = 15;
                     } else if (type === 'sslc-fees') {
-                        genRate = 30;
+                        scRate = stRate = oecRate = genRate = 30;
                     } else if (type === 'af-ff') {
-                        oecRate = 17;
-                        genRate = 17;
+                        scRate = stRate = oecRate = genRate = 17;
                     } else {
-                        genRate = 12;
+                        scRate = stRate = oecRate = genRate = 12;
                     }
 
                     // Build Table Rows (Only > 0)
