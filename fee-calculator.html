@@ -32,7 +32,7 @@
                 <option value="second">Second Installment</option>
                 <option value="sslc-card">SSLC Card</option>
                 <option value="sslc-fees">SSLC Fees</option>
-                <option value="af-ff">AF/ff</option>
+                <option value="af-ff">Fest & Athletic Fees</option>
             </select>
         </div>
 
@@ -181,13 +181,13 @@
                 let scRate = 0, stRate = 0, oecRate = 0, genRate = 0;
 
                 if (type === 'sslc-card') {
-                    scRate = stRate = oecRate = genRate = 15;
+                    genRate = 15; oecRate = 15; scRate = 0; stRate = 0;
                 } else if (type === 'sslc-fees') {
-                    scRate = stRate = oecRate = genRate = 30;
+                    genRate = 30; scRate = 0; stRate = 0; oecRate = 0;
                 } else if (type === 'af-ff') {
-                    scRate = stRate = oecRate = genRate = 17;
+                    genRate = 17; oecRate = 17; scRate = 0; stRate = 0;
                 } else {
-                    scRate = stRate = oecRate = genRate = 12; // Default rate for installments
+                    genRate = 12.50; scRate = 0; stRate = 0; oecRate = 0;
                 }
 
                 fee = (scCount * scRate) + (stCount * stRate) + (oecCount * oecRate) + (genCount * genRate);
@@ -272,13 +272,13 @@
                     let scRate = 0, stRate = 0, oecRate = 0, genRate = 0;
 
                     if (type === 'sslc-card') {
-                        scRate = stRate = oecRate = genRate = 15;
+                        genRate = 15; oecRate = 15; scRate = 0; stRate = 0;
                     } else if (type === 'sslc-fees') {
-                        scRate = stRate = oecRate = genRate = 30;
+                        genRate = 30; scRate = 0; stRate = 0; oecRate = 0;
                     } else if (type === 'af-ff') {
-                        scRate = stRate = oecRate = genRate = 17;
+                        genRate = 17; oecRate = 17; scRate = 0; stRate = 0;
                     } else {
-                        scRate = stRate = oecRate = genRate = 12;
+                        genRate = 12.50; scRate = 0; stRate = 0; oecRate = 0;
                     }
 
                     // Build Table Rows (Only > 0)
