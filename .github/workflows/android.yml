@@ -32,7 +32,7 @@ jobs:
       - name: Build Web Project
         run: |
           mkdir -p www
-          cp index.html fee-calculator.html style.css manifest.json fee.png www/
+          cp index.html style.css manifest.json fee.png www/
 
       - name: Capacitor Sync
         run: npx cap sync
