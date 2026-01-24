@@ -316,6 +316,22 @@
         schoolCodeInput.addEventListener('input', (e) => {
             const code = e.target.value.trim();
             localStorage.setItem('schoolCode', code);
+
+            const clearAll = () => {
+                schoolNameInput.value = '';
+                scInput.value = 0;
+                stInput.value = 0;
+                oecInput.value = 0;
+                genInput.value = 0;
+                if (reportSchoolName) reportSchoolName.textContent = 'NAME';
+                calculateFees();
+            };
+
+            if (code.length < 2) {
+                clearAll();
+                return;
+            }
+
             if (code.length >= 2) {
                 const dbPath = `school_defaults/code_${code.toLowerCase().replace(/\s+/g, '_')}`;
                 database.ref(dbPath).once('value').then((snapshot) => {
@@ -328,6 +344,8 @@
                         genInput.value = data.gen || 0;
                         if (reportSchoolName) reportSchoolName.textContent = (data.name || '').toUpperCase();
                         calculateFees();
+                    } else {
+                        clearAll(); // No match in DB, clear fields for new entry
                     }
                 });
             }
