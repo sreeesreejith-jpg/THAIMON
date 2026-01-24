@@ -128,22 +128,16 @@
             </select>
         </div>
 
+        <!-- Dynamic Calculation Result Display -->
         <div id="calculation-result" style="margin-top: 15px; padding: 15px;">
             <p id="fee-label" style="font-size: 0.9rem;">Estimated Total Fee</p>
             <div class="total-fee-val" style="font-size: 1.8rem;">₹ <span id="total-fee-amount">0.00</span></div>
         </div>
 
-        <div class="links" style="margin-top: 20px; gap: 10px;">
-            <button id="show-report" class="btn pdf-btn" disabled
-                style="opacity: 0.6; padding: 12px; margin-top: 0;">Show Final Report</button>
-            <button id="share-report" class="btn pdf-btn" disabled
-                style="opacity: 0.6; padding: 12px; margin-top: 5px;">Share Report</button>
-        </div>
-
-        <!-- Hidden Report for Preview - Now larger and clickable to hide -->
-        <div id="report-preview" onclick="this.style.display='none'" title="Click to hide">
+        <!-- Live Report Preview -->
+        <div id="report-preview" style="display: none; margin-top: 15px; background: white; border-radius: 10px;">
             <div class="report-header-box">
-                <h2 id="report-school-name" style="font-size: 1.4rem;">SCHOOL NAME</h2>
+                <h2 id="report-school-name" style="font-size: 1.4rem;">NAME</h2>
             </div>
             <div class="report-type-box">
                 <span id="rep-type-name" style="font-size: 1.1rem;"></span>
@@ -177,22 +171,28 @@
                         <td id="rep-oec-fee"></td>
                     </tr>
                     <tr id="row-gen">
-                        <td>General</td>
+                        <td>GEN</td>
                         <td id="rep-gen"></td>
                         <td id="rep-gen-rate">0.00</td>
                         <td id="rep-gen-fee"></td>
                     </tr>
                     <tr class="report-footer-row">
-                        <td colspan="3" style="text-align: right; font-size: 1.1rem;">Final Total</td>
-                        <td id="rep-fee" style="font-weight: bold; font-size: 1.1rem;"></td>
+                        <td colspan="3" style="text-align: center; font-size: 1.1rem;">Final Total</td>
+                        <td id="rep-fee" style="font-weight: bold; font-size: 1.1rem; text-align: center;"></td>
                     </tr>
                 </tbody>
             </table>
-            <div class="report-student-count" style="font-size: 1.1rem; padding: 15px;">
+            <div class="report-student-count" style="font-size: 1.1rem; padding: 15px; color: #000;">
                 Total Students: <span id="rep-total"></span>
             </div>
-            <div style="background: #eee; color: #666; font-size: 0.7rem; padding: 5px;">Click anywhere on report to
-                close</div>
+
+        </div>
+
+        <div class="links" style="margin-top: 20px;">
+            <button id="share-report" class="btn pdf-btn" disabled
+                style="opacity: 0.6; padding: 15px; border-radius: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fas fa-share-alt"></i>SHARE REPORT
+            </button>
         </div>
     </div>
 
@@ -226,7 +226,6 @@
         const totalInput = document.getElementById('total-students');
         const typeSelect = document.getElementById('installment-type');
         const totalFeeAmount = document.getElementById('total-fee-amount');
-        const showBtn = document.getElementById('show-report');
         const shareBtn = document.getElementById('share-report');
         const reportSchoolName = document.getElementById('report-school-name');
         const previewEl = document.getElementById('report-preview');
@@ -252,10 +251,13 @@
             else if (type === 'first' || type === 'second') { genRate = 12.50; }
 
             const totalFee = (sc * scRate) + (st * stRate) + (oec * oecRate) + (gen * genRate);
-            totalFeeAmount.textContent = totalFee.toFixed(2);
+
+            // Safety check for ID
+            if (totalFeeAmount) totalFeeAmount.textContent = totalFee.toFixed(2);
 
             // Update Preview
             if (type) {
+                if (previewEl) previewEl.style.display = 'block';
                 document.getElementById('rep-type-name').textContent = typeSelect.options[typeSelect.selectedIndex].text;
                 document.getElementById('rep-total').textContent = total;
                 document.getElementById('rep-sc').textContent = sc;
@@ -273,8 +275,6 @@
                 document.getElementById('row-gen').style.display = gen > 0 ? '' : 'none';
                 document.getElementById('rep-fee').textContent = totalFee.toFixed(2);
 
-                showBtn.disabled = total === 0;
-                showBtn.style.opacity = total === 0 ? "0.6" : "1";
                 shareBtn.disabled = total === 0;
                 shareBtn.style.opacity = total === 0 ? "0.6" : "1";
             }
@@ -284,16 +284,11 @@
             const code = schoolCodeInput.value.trim();
             const name = schoolNameInput.value.trim();
 
-            // Local storage ALWAYS works
             localStorage.setItem('schoolName', name);
             localStorage.setItem('schoolCode', code);
-            reportSchoolName.textContent = name.toUpperCase() || 'NAME';
+            if (reportSchoolName) reportSchoolName.textContent = name.toUpperCase() || 'NAME';
 
-            // Cloud sync ONLY if a code is provided
-            if (!code) {
-                console.log("No secret code. Data stored locally only.");
-                return;
-            }
+            if (!code) return;
 
             const schoolKey = `code_${code.toLowerCase().replace(/\s+/g, '_')}`;
             const dbPath = `school_defaults/${schoolKey}`;
@@ -312,9 +307,7 @@
 
             clearTimeout(syncTimeout);
             syncTimeout = setTimeout(() => {
-                database.ref(dbPath).set(data)
-                    .then(() => console.log("✓ Cloud sync successful for code:", code))
-                    .catch(e => console.error("Cloud sync failed", e));
+                database.ref(dbPath).set(data).catch(e => console.error("Cloud sync failed", e));
             }, 800);
         };
 
@@ -323,7 +316,6 @@
         schoolCodeInput.addEventListener('input', (e) => {
             const code = e.target.value.trim();
             localStorage.setItem('schoolCode', code);
-
             if (code.length >= 2) {
                 const dbPath = `school_defaults/code_${code.toLowerCase().replace(/\s+/g, '_')}`;
                 database.ref(dbPath).once('value').then((snapshot) => {
@@ -334,7 +326,7 @@
                         stInput.value = data.st || 0;
                         oecInput.value = data.oec || 0;
                         genInput.value = data.gen || 0;
-                        reportSchoolName.textContent = (data.name || '').toUpperCase();
+                        if (reportSchoolName) reportSchoolName.textContent = (data.name || '').toUpperCase();
                         calculateFees();
                     }
                 });
@@ -349,11 +341,6 @@
         });
 
         typeSelect.addEventListener('change', calculateFees);
-
-        showBtn.addEventListener('click', () => {
-            previewEl.style.display = 'block';
-            previewEl.scrollIntoView({ behavior: 'smooth' });
-        });
 
         shareBtn.addEventListener('click', async () => {
             try {
@@ -375,13 +362,12 @@
                 else if (type === 'first' || type === 'second') { genRate = 12.50; }
 
                 const rows = [];
-                if (sc > 0) rows.push(["SC", sc, scRate.toFixed(2), (sc * scRate).toFixed(2)]);
-                if (st > 0) rows.push(["ST", st, stRate.toFixed(2), (st * stRate).toFixed(2)]);
+                if (sc > 0) rows.push(["SC", sc, "0.00", "0.00"]);
+                if (st > 0) rows.push(["ST", st, "0.00", "0.00"]);
                 if (oec > 0) rows.push(["OEC", oec, oecRate.toFixed(2), (oec * oecRate).toFixed(2)]);
-                if (gen > 0) rows.push(["General", gen, genRate.toFixed(2), (gen * genRate).toFixed(2)]);
+                if (gen > 0) rows.push(["GEN", gen, genRate.toFixed(2), (gen * genRate).toFixed(2)]);
                 const totalFee = (sc * scRate) + (st * stRate) + (oec * oecRate) + (gen * genRate);
 
-                // PDF DESIGN
                 const primaryColor = [26, 42, 108];
                 doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
                 doc.setFontSize(22);
@@ -399,14 +385,19 @@
 
                 doc.autoTable({
                     startY: 65,
-                    head: [['Category', 'No. of Students', 'Rate (Rs.)', 'Total (Rs.)']],
+                    head: [['Category', 'Students', 'Rate (Rs.)', 'Total (Rs.)']],
                     body: rows,
                     foot: [['', '', 'Final Total Fee', `Rs. ${totalFee.toFixed(2)}`]],
                     theme: 'striped',
                     headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' },
-                    footStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold', halign: 'right' },
-                    styles: { fontSize: 11, cellPadding: 5 },
-                    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
+                    footStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold', halign: 'center' },
+                    styles: { fontSize: 11, cellPadding: 5, halign: 'center' },
+                    columnStyles: {
+                        0: { halign: 'center' },
+                        1: { halign: 'center' },
+                        2: { halign: 'center' },
+                        3: { halign: 'center' }
+                    }
                 });
 
                 const finalY = doc.lastAutoTable.finalY + 15;
@@ -414,7 +405,6 @@
                 doc.text(`Total Number of Students: ${sc + st + oec + gen}`, 15, finalY);
 
                 const fileName = `Fee_Report_${Date.now()}.pdf`;
-
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { Share, Filesystem } = window.Capacitor.Plugins;
                     const pdfBase64 = doc.output('datauristring').split(',')[1];
@@ -441,12 +431,11 @@
                 stInput.value = data.st || 0;
                 oecInput.value = data.oec || 0;
                 genInput.value = data.gen || 0;
-                reportSchoolName.textContent = (data.name || '').toUpperCase();
+                if (reportSchoolName) reportSchoolName.textContent = (data.name || '').toUpperCase();
                 calculateFees();
             }
         }
 
-        // Handle Back Button
         if (window.Capacitor && window.Capacitor.isNativePlatform()) {
             const { App } = window.Capacitor.Plugins;
             if (App) App.addListener('backButton', () => App.exitApp());
