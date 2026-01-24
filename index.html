@@ -13,33 +13,191 @@
     <link rel="icon" type="image/png" href="fee.png">
     <link rel="apple-touch-icon" href="fee.png">
     <meta name="theme-color" content="#1a2a6c">
+    <style>
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .col {
+            flex: 1;
+            text-align: left;
+        }
+
+        .col label {
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            display: block;
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .category-input {
+            font-size: 1.2rem !important;
+            padding: 10px !important;
+            margin-bottom: 0 !important;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container fade-in">
-        <label for="school-name-input" class="input-label">Please enter school name</label>
-        <input type="text" id="school-name-input" class="school-name-input" placeholder="School Name Here">
+    <div class="container fade-in" style="max-width: 600px;">
+        <h1>School Data</h1>
+
+        <label for="school-code-input" class="input-label">School Code</label>
+        <input type="text" id="school-code-input" class="school-name-input" placeholder="Enter Code">
+
+        <label for="school-name-input" class="input-label">School Name</label>
+        <input type="text" id="school-name-input" class="school-name-input" placeholder="School Name">
+
+        <div class="row">
+            <div class="col">
+                <label>SC Students</label>
+                <input type="number" id="sc-students" class="category-input" value="0">
+            </div>
+            <div class="col">
+                <label>ST Students</label>
+                <input type="number" id="st-students" class="category-input" value="0">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label>OEC Students</label>
+                <input type="number" id="oec-students" class="category-input" value="0">
+            </div>
+            <div class="col">
+                <label>General Students</label>
+                <input type="number" id="gen-students" class="category-input" value="0">
+            </div>
+        </div>
+
         <div class="links">
-            <a href="fee-calculator.html" class="btn">Fee Calculator</a>
+            <a href="fee-calculator.html" class="btn"
+                style="background: var(--accent-color); color: #1a2a6c; margin-top: 20px;">Proceed to Fee Calculator</a>
         </div>
     </div>
 
     <script src="capacitor.js"></script>
-    <script>
-        const schoolNameInput = document.getElementById('school-name-input');
 
-        // Load saved name
-        const savedName = localStorage.getItem('schoolName');
-        if (savedName) {
-            schoolNameInput.value = savedName;
-            document.title = savedName;
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <script>
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyD6w0IYFllw_woTeuTHgSx9BkgczvmGYo0",
+            authDomain: "fees-334ec.firebaseapp.com",
+            databaseURL: "https://fees-334ec-default-rtdb.firebaseio.com",
+            projectId: "fees-334ec",
+            storageBucket: "fees-334ec.firebasestorage.app",
+            messagingSenderId: "673058065420",
+            appId: "1:673058065420:web:89d33d690c3c01ac417229"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        const schoolNameInput = document.getElementById('school-name-input');
+        const schoolCodeInput = document.getElementById('school-code-input');
+        const scInput = document.getElementById('sc-students');
+        const stInput = document.getElementById('st-students');
+        const oecInput = document.getElementById('oec-students');
+        const genInput = document.getElementById('gen-students');
+
+        let syncTimeout;
+
+        // Load saved data from localStorage
+        const savedCode = localStorage.getItem('schoolCode');
+        if (savedCode) {
+            schoolCodeInput.value = savedCode;
+            const schoolKey = `code_${savedCode.toLowerCase().replace(/\s+/g, '_')}`;
+            const localKey = `fee_defaults_${schoolKey}`;
+            const localData = localStorage.getItem(localKey);
+            if (localData) {
+                const data = JSON.parse(localData);
+                schoolNameInput.value = data.name || '';
+                scInput.value = data.sc || 0;
+                stInput.value = data.st || 0;
+                oecInput.value = data.oec || 0;
+                genInput.value = data.gen || 0;
+                document.title = data.name || 'School App';
+            }
         }
 
-        // Save on change
-        schoolNameInput.addEventListener('input', (e) => {
-            const name = e.target.value;
+        // 🔄 Real-time Auto-Sync Logic
+        const autoSyncToCloud = () => {
+            const code = schoolCodeInput.value.trim();
+            const name = schoolNameInput.value.trim();
+            if (!code) return;
+
+            const schoolKey = `code_${code.toLowerCase().replace(/\s+/g, '_')}`;
+            const dbPath = `school_defaults/${schoolKey}`;
+            const localKey = `fee_defaults_${schoolKey}`;
+
+            const data = {
+                name: name,
+                sc: scInput.value,
+                st: stInput.value,
+                oec: oecInput.value,
+                gen: genInput.value,
+                updatedAt: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            // Save locally instantly
             localStorage.setItem('schoolName', name);
-            document.title = name || 'School App';
+            localStorage.setItem('schoolCode', code);
+            localStorage.setItem(localKey, JSON.stringify(data));
+
+            // Sync to Firebase (Debounced - waits 800ms after last change)
+            clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(() => {
+                database.ref(dbPath).set(data)
+                    .then(() => console.log("✓ Cloud sync successful"))
+                    .catch(e => console.error("✗ Cloud sync failed", e));
+            }, 800);
+        };
+
+        // 🔍 Auto-Lookup Logic
+        schoolCodeInput.addEventListener('input', (e) => {
+            const code = e.target.value.trim();
+            localStorage.setItem('schoolCode', code);
+
+            if (code.length >= 2) {
+                const dbPath = `school_defaults/code_${code.toLowerCase().replace(/\s+/g, '_')}`;
+                database.ref(dbPath).once('value').then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        schoolNameInput.value = data.name || '';
+                        scInput.value = data.sc || 0;
+                        stInput.value = data.st || 0;
+                        oecInput.value = data.oec || 0;
+                        genInput.value = data.gen || 0;
+
+                        localStorage.setItem('schoolName', data.name);
+                        const schoolKey = `code_${code.toLowerCase().replace(/\s+/g, '_')}`;
+                        localStorage.setItem(`fee_defaults_${schoolKey}`, JSON.stringify(data));
+                        document.title = data.name || 'School App';
+
+                        schoolCodeInput.style.borderColor = "#fdbb2d";
+                        setTimeout(() => schoolCodeInput.style.borderColor = "", 1500);
+                    }
+                });
+            }
+        });
+
+        // Attach auto-sync to ALL inputs (except school code - it has lookup logic)
+        [schoolNameInput, scInput, stInput, oecInput, genInput].forEach(input => {
+            input.addEventListener('input', autoSyncToCloud);
+        });
+
+        // Update title separately
+        schoolNameInput.addEventListener('input', (e) => {
+            document.title = e.target.value || 'School App';
         });
 
         // Handle Back Button

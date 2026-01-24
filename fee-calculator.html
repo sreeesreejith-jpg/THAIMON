@@ -11,6 +11,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <!-- Font Awesome for Home Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs (Compat Version for easier learning) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="fee.png">
     <link rel="apple-touch-icon" href="fee.png">
@@ -134,26 +139,140 @@
             const previewEl = document.getElementById('report-preview');
             const reportSchoolName = document.getElementById('report-school-name');
 
-            // Load School Name
+            let syncTimeout;
+
+            // --- FIREBASE CONFIGURATION ---
+            // Replace the values below with your own from the Firebase Console
+            const firebaseConfig = {
+                apiKey: "AIzaSyD6w0IYFllw_woTeuTHgSx9BkgczvmGYo0",
+                authDomain: "fees-334ec.firebaseapp.com",
+                databaseURL: "https://fees-334ec-default-rtdb.firebaseio.com",
+                projectId: "fees-334ec",
+                storageBucket: "fees-334ec.firebasestorage.app",
+                messagingSenderId: "673058065420",
+                appId: "1:673058065420:web:89d33d690c3c01ac417229"
+            };
+
+            // Initialize Firebase
+            // This starts the connection to Google's servers
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+            } catch (err) {
+                console.error("Firebase initialization failed:", err);
+            }
+            const database = firebase.database();
+
+            // Load School Name and Code
             const savedSchoolName = localStorage.getItem('schoolName') || 'GVHSS Thrikkothamangalam';
+            const savedSchoolCode = localStorage.getItem('schoolCode') || '00000';
+
             document.title = `Fee Calculator - ${savedSchoolName}`;
             reportSchoolName.textContent = savedSchoolName.toUpperCase();
 
+            // Helper to clean school name/code for database path
+            const getDbPath = () => {
+                if (!savedSchoolCode || savedSchoolCode === '00000') {
+                    // Fallback to name if code is missing, but warn
+                    console.warn("School Code missing, using name-based path.");
+                    return `school_defaults/${savedSchoolName.toLowerCase().replace(/\s+/g, '_')}`;
+                }
+                return `school_defaults/code_${savedSchoolCode.toLowerCase().replace(/\s+/g, '_')}`;
+            };
+
+            // Load Defaults helper (Now with Firebase!)
+            const loadSavedDefaults = async (isAuto = false) => {
+                const dbPath = getDbPath();
+                const schoolKey = (savedSchoolCode && savedSchoolCode !== '00000') ?
+                    `code_${savedSchoolCode.toLowerCase().replace(/\s+/g, '_')}` :
+                    savedSchoolName.toLowerCase().replace(/\s+/g, '_');
+
+                // 1. Try to load from Local Storage first (for speed/offline)
+                const localKey = `fee_defaults_${schoolKey}`;
+                const localData = localStorage.getItem(localKey);
+                if (localData) {
+                    const data = JSON.parse(localData);
+                    applyDataToInputs(data);
+                }
+
+                // 2. Sync with Firebase in the background
+                try {
+                    console.log("Fetching from Firebase for path:", dbPath);
+                    const snapshot = await database.ref(dbPath).once('value');
+                    if (snapshot.exists()) {
+                        const cloudData = snapshot.val();
+                        applyDataToInputs(cloudData);
+
+                        // Update local cache
+                        localStorage.setItem(localKey, JSON.stringify(cloudData));
+                        if (!isAuto) alert("Data synced from Cloud!");
+                        return true;
+                    }
+                } catch (err) {
+                    console.error("Firebase load failed:", err);
+                    if (!isAuto && !localData) alert("No data found (Offline or not set).");
+                }
+                return !!localData;
+            };
+
+            const applyDataToInputs = (data) => {
+                document.getElementById('sc-students').value = data.sc || 0;
+                document.getElementById('st-students').value = data.st || 0;
+                document.getElementById('oec-students').value = data.oec || 0;
+                document.getElementById('gen-students').value = data.gen || 0;
+            };
+
             // Show/Hide fields
-            typeSelect.addEventListener('change', () => {
+            typeSelect.addEventListener('change', async () => {
                 if (typeSelect.value) {
                     firstFields.classList.remove('hidden');
-                    // Reset all inputs to 0 on change
-                    document.getElementById('total-students').value = "0";
-                    document.getElementById('sc-students').value = "0";
-                    document.getElementById('st-students').value = "0";
-                    document.getElementById('oec-students').value = "0";
-                    document.getElementById('gen-students').value = "0";
+                    // Try to load defaults automatically
+                    await loadSavedDefaults(true);
                 } else {
                     firstFields.classList.add('hidden');
                 }
                 previewEl.style.display = 'none';
                 calculateFees();
+            });
+
+            // 🔄 Real-time Auto-Sync Logic for Calculator
+            const autoSyncToCloud = () => {
+                const code = savedSchoolCode;
+                if (!code || code === '00000') return;
+
+                const dbPath = getDbPath();
+                const schoolKey = `code_${code.toLowerCase().replace(/\s+/g, '_')}`;
+                const localKey = `fee_defaults_${schoolKey}`;
+
+                const data = {
+                    name: savedSchoolName,
+                    sc: document.getElementById('sc-students').value,
+                    st: document.getElementById('st-students').value,
+                    oec: document.getElementById('oec-students').value,
+                    gen: document.getElementById('gen-students').value,
+                    updatedAt: firebase.database.ServerValue.TIMESTAMP
+                };
+
+                // Save locally instantly
+                localStorage.setItem(localKey, JSON.stringify(data));
+
+                // Sync to Firebase (Debounced)
+                clearTimeout(syncTimeout);
+                syncTimeout = setTimeout(() => {
+                    database.ref(dbPath).set(data)
+                        .then(() => console.log("✓ Calculator: Cloud sync successful"))
+                        .catch(e => console.error("✗ Calculator: Cloud sync failed", e));
+                }, 800);
+            };
+
+            // Attach auto-sync to student count inputs
+            ['sc-students', 'st-students', 'oec-students', 'gen-students'].forEach(id => {
+                const input = document.getElementById(id);
+                input.addEventListener('input', () => {
+                    calculateFees(); // Update the fee calculation
+                    autoSyncToCloud(); // Sync to cloud
+                });
             });
 
             // Calculate Fees
@@ -244,6 +363,7 @@
 
             const inputs = document.querySelectorAll('input');
             inputs.forEach(input => input.addEventListener('input', calculateFees));
+
 
             // SHOW REPORT Logic
             showBtn.addEventListener('click', () => {
