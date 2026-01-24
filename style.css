@@ -47,7 +47,7 @@ body {
     -webkit-backdrop-filter: blur(15px);
     border: 1px solid var(--glass-border);
     border-radius: 20px;
-    padding: 40px;
+    padding: 25px 20px;
     text-align: center;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     max-width: 500px;
@@ -161,16 +161,16 @@ h1 {
 
 /* Mockup-based Report Styles */
 #report-preview {
-    margin-top: 30px;
+    margin-top: 20px;
     padding: 0;
     display: none;
     font-family: 'Inter', sans-serif;
     width: 100%;
-    overflow-x: auto;
     background: white;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    border: 2px solid #1a2a6c;
+    border: 3px solid #1a2a6c;
     margin-bottom: 20px;
+    overflow: hidden;
 }
 
 .report-header-box {
@@ -216,9 +216,9 @@ h1 {
 .report-table th,
 .report-table td {
     border: 1px solid #000;
-    padding: 8px 6px;
+    padding: 10px 8px;
     text-align: left;
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: #000;
 }
 
@@ -311,7 +311,7 @@ h1 {
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     text-align: left;
 }
 

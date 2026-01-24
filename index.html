@@ -13,7 +13,7 @@
     <link rel="icon" type="image/png" href="fee.png">
     <link rel="apple-touch-icon" href="fee.png">
     <meta name="theme-color" content="#1a2a6c">
-    
+
     <!-- PDF Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -69,51 +69,51 @@
         <h1>School Manager</h1>
 
         <div class="form-group">
-            <label for="school-code-input">School Code</label>
-            <input type="text" id="school-code-input" class="school-name-input" placeholder="Enter Code" style="font-size: 1.4rem; margin-bottom: 15px;">
+            <label for="school-code-input">Secret / School Code <br><small
+                    style="opacity: 0.7; font-weight: 400;">(Enter to save online for future use)</small></label>
+            <input type="text" id="school-code-input" class="school-name-input" placeholder="Enter Secret Code"
+                style="font-size: 1.3rem; margin-bottom: 10px; padding: 10px;">
         </div>
 
         <div class="form-group">
-            <label for="school-name-input">School Name</label>
-            <input type="text" id="school-name-input" class="school-name-input" placeholder="School Name" style="font-size: 1.2rem; margin-bottom: 20px;">
+            <label for="school-name-input">School/User Name</label>
+            <input type="text" id="school-name-input" class="school-name-input" placeholder="Name"
+                style="font-size: 1.2rem; margin-bottom: 15px; padding: 10px;">
         </div>
 
-        <div class="divider"></div>
-        <div class="section-title">Student Counts</div>
+        <div class="section-title" style="margin-bottom: 10px; font-size: 1rem;">Student Counts</div>
 
-        <div class="row">
+        <div class="row" style="margin-bottom: 10px;">
             <div class="col">
-                <label>SC Students</label>
+                <label>SC</label>
                 <input type="number" id="sc-students" class="category-input" value="0">
             </div>
             <div class="col">
-                <label>ST Students</label>
+                <label>ST</label>
                 <input type="number" id="st-students" class="category-input" value="0">
             </div>
-        </div>
-        <div class="row">
             <div class="col">
-                <label>OEC Students</label>
+                <label>OEC</label>
                 <input type="number" id="oec-students" class="category-input" value="0">
             </div>
-            <div class="col">
+        </div>
+        <div class="row" style="margin-bottom: 10px;">
+            <div class="col" style="flex: 2;">
                 <label>General Students</label>
                 <input type="number" id="gen-students" class="category-input" value="0">
             </div>
+            <div class="col" style="flex: 1;">
+                <label>Total</label>
+                <input type="number" id="total-students" value="0" readonly
+                    style="background: rgba(255,255,255,0.05); color: var(--accent-color); font-weight: bold; font-size: 1.2rem; padding: 10px;">
+            </div>
         </div>
 
-        <div class="form-group" style="margin-top: 15px;">
-            <label>Total Students</label>
-            <input type="number" id="total-students" value="0" readonly style="background: rgba(255,255,255,0.05); color: var(--accent-color); font-weight: bold;">
-        </div>
-
-        <div class="divider"></div>
-        <div class="section-title">Fee Calculator</div>
+        <div class="section-title" style="margin: 15px 0 10px 0; font-size: 1rem;">Fee Calculator</div>
 
         <div class="form-group">
-            <label for="installment-type">Select Fee Type</label>
-            <select id="installment-type">
-                <option value="" disabled selected>Choose an option</option>
+            <select id="installment-type" style="padding: 10px;">
+                <option value="" disabled selected>Choose Fee Type</option>
                 <option value="first">First Installment</option>
                 <option value="second">Second Installment</option>
                 <option value="sslc-card">SSLC Card</option>
@@ -122,47 +122,71 @@
             </select>
         </div>
 
-        <div id="calculation-result">
-            <p id="fee-label">Estimated Total Fee</p>
-            <div class="total-fee-val">₹ <span id="total-fee-amount">0.00</span></div>
+        <div id="calculation-result" style="margin-top: 15px; padding: 15px;">
+            <p id="fee-label" style="font-size: 0.9rem;">Estimated Total Fee</p>
+            <div class="total-fee-val" style="font-size: 1.8rem;">₹ <span id="total-fee-amount">0.00</span></div>
         </div>
 
-        <div class="links" style="margin-top: 25px;">
-            <button id="show-report" class="btn pdf-btn" disabled style="opacity: 0.6;">Show Final Report</button>
-            <button id="share-report" class="btn pdf-btn" disabled style="opacity: 0.6;">Share Report</button>
+        <div class="links" style="margin-top: 20px; gap: 10px;">
+            <button id="show-report" class="btn pdf-btn" disabled
+                style="opacity: 0.6; padding: 12px; margin-top: 0;">Show Final Report</button>
+            <button id="share-report" class="btn pdf-btn" disabled
+                style="opacity: 0.6; padding: 12px; margin-top: 5px;">Share Report</button>
         </div>
 
-        <!-- Hidden Report for Preview -->
-        <div id="report-preview">
+        <!-- Hidden Report for Preview - Now larger and clickable to hide -->
+        <div id="report-preview" onclick="this.style.display='none'" title="Click to hide">
             <div class="report-header-box">
-                <h2 id="report-school-name">SCHOOL NAME</h2>
+                <h2 id="report-school-name" style="font-size: 1.4rem;">SCHOOL NAME</h2>
             </div>
             <div class="report-type-box">
-                <span id="rep-type-name"></span>
+                <span id="rep-type-name" style="font-size: 1.1rem;"></span>
             </div>
             <table class="report-table">
                 <thead>
                     <tr>
                         <th>Category</th>
-                        <th>No. of Students</th>
+                        <th>Students</th>
                         <th>Rate</th>
-                        <th>Total Fee</th>
+                        <th>Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr id="row-sc"><td>SC</td><td id="rep-sc"></td><td>0.00</td><td id="rep-sc-fee"></td></tr>
-                    <tr id="row-st"><td>ST</td><td id="rep-st"></td><td>0.00</td><td id="rep-st-fee"></td></tr>
-                    <tr id="row-oec"><td>OEC</td><td id="rep-oec"></td><td>0.00</td><td id="rep-oec-fee"></td></tr>
-                    <tr id="row-gen"><td>General</td><td id="rep-gen"></td><td id="rep-gen-rate">0.00</td><td id="rep-gen-fee"></td></tr>
+                    <tr id="row-sc">
+                        <td>SC</td>
+                        <td id="rep-sc"></td>
+                        <td>0.00</td>
+                        <td id="rep-sc-fee"></td>
+                    </tr>
+                    <tr id="row-st">
+                        <td>ST</td>
+                        <td id="rep-st"></td>
+                        <td>0.00</td>
+                        <td id="rep-st-fee"></td>
+                    </tr>
+                    <tr id="row-oec">
+                        <td>OEC</td>
+                        <td id="rep-oec"></td>
+                        <td>0.00</td>
+                        <td id="rep-oec-fee"></td>
+                    </tr>
+                    <tr id="row-gen">
+                        <td>General</td>
+                        <td id="rep-gen"></td>
+                        <td id="rep-gen-rate">0.00</td>
+                        <td id="rep-gen-fee"></td>
+                    </tr>
                     <tr class="report-footer-row">
-                        <td colspan="3" style="text-align: right;">Final Total Fees</td>
-                        <td id="rep-fee" style="font-weight: bold;"></td>
+                        <td colspan="3" style="text-align: right; font-size: 1.1rem;">Final Total</td>
+                        <td id="rep-fee" style="font-weight: bold; font-size: 1.1rem;"></td>
                     </tr>
                 </tbody>
             </table>
-            <div class="report-student-count">
-                Total No of Students: <span id="rep-total"></span>
+            <div class="report-student-count" style="font-size: 1.1rem; padding: 15px;">
+                Total Students: <span id="rep-total"></span>
             </div>
+            <div style="background: #eee; color: #666; font-size: 0.7rem; padding: 5px;">Click anywhere on report to
+                close</div>
         </div>
     </div>
 
@@ -242,7 +266,7 @@
                 document.getElementById('rep-gen-fee').textContent = (gen * genRate).toFixed(2);
                 document.getElementById('row-gen').style.display = gen > 0 ? '' : 'none';
                 document.getElementById('rep-fee').textContent = totalFee.toFixed(2);
-                
+
                 showBtn.disabled = total === 0;
                 showBtn.style.opacity = total === 0 ? "0.6" : "1";
                 shareBtn.disabled = total === 0;
@@ -253,7 +277,17 @@
         const autoSyncToCloud = () => {
             const code = schoolCodeInput.value.trim();
             const name = schoolNameInput.value.trim();
-            if (!code) return;
+
+            // Local storage ALWAYS works
+            localStorage.setItem('schoolName', name);
+            localStorage.setItem('schoolCode', code);
+            reportSchoolName.textContent = name.toUpperCase() || 'NAME';
+
+            // Cloud sync ONLY if a code is provided
+            if (!code) {
+                console.log("No secret code. Data stored locally only.");
+                return;
+            }
 
             const schoolKey = `code_${code.toLowerCase().replace(/\s+/g, '_')}`;
             const dbPath = `school_defaults/${schoolKey}`;
@@ -268,14 +302,13 @@
                 updatedAt: firebase.database.ServerValue.TIMESTAMP
             };
 
-            localStorage.setItem('schoolName', name);
-            localStorage.setItem('schoolCode', code);
             localStorage.setItem(localKey, JSON.stringify(data));
-            reportSchoolName.textContent = name.toUpperCase() || 'SCHOOL NAME';
 
             clearTimeout(syncTimeout);
             syncTimeout = setTimeout(() => {
-                database.ref(dbPath).set(data).catch(e => console.error("Cloud sync failed", e));
+                database.ref(dbPath).set(data)
+                    .then(() => console.log("✓ Cloud sync successful for code:", code))
+                    .catch(e => console.error("Cloud sync failed", e));
             }, 800);
         };
 
@@ -283,6 +316,8 @@
 
         schoolCodeInput.addEventListener('input', (e) => {
             const code = e.target.value.trim();
+            localStorage.setItem('schoolCode', code);
+
             if (code.length >= 2) {
                 const dbPath = `school_defaults/code_${code.toLowerCase().replace(/\s+/g, '_')}`;
                 database.ref(dbPath).once('value').then((snapshot) => {
@@ -320,7 +355,7 @@
                 const doc = new jsPDF();
                 const schoolName = schoolNameInput.value || "School";
                 const typeName = typeSelect.options[typeSelect.selectedIndex].text;
-                
+
                 const sc = parseInt(scInput.value) || 0;
                 const st = parseInt(stInput.value) || 0;
                 const oec = parseInt(oecInput.value) || 0;
