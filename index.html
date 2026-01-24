@@ -83,7 +83,8 @@
 
         <div class="section-title" style="margin-bottom: 10px; font-size: 1rem;">Student Counts</div>
 
-        <div class="row" style="margin-bottom: 10px;">
+        <div class="student-grid"
+            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
             <div class="col">
                 <label>SC</label>
                 <input type="number" id="sc-students" class="category-input" value="0">
@@ -96,24 +97,29 @@
                 <label>OEC</label>
                 <input type="number" id="oec-students" class="category-input" value="0">
             </div>
-        </div>
-        <div class="row" style="margin-bottom: 10px;">
-            <div class="col" style="flex: 2;">
-                <label>General Students</label>
+            <div class="col">
+                <label>GEN</label>
                 <input type="number" id="gen-students" class="category-input" value="0">
             </div>
-            <div class="col" style="flex: 1;">
-                <label>Total</label>
+            <div class="col">
+                <label style="color: #fff; font-weight: 800;">TOTAL</label>
                 <input type="number" id="total-students" value="0" readonly
-                    style="background: rgba(255,255,255,0.05); color: var(--accent-color); font-weight: bold; font-size: 1.2rem; padding: 10px;">
+                    style="background: rgba(255,255,255,0.1); color: var(--accent-color); font-weight: bold; border: 1px solid var(--accent-color);">
             </div>
         </div>
 
-        <div class="section-title" style="margin: 15px 0 10px 0; font-size: 1rem;">Fee Calculator</div>
+        <div class="section-title"
+            style="margin: 20px 0 10px 0; font-size: 1.1rem; color: #fff; background: rgba(255,255,255,0.1); padding: 5px; border-radius: 5px;">
+            <i class="fas fa-calculator" style="color: var(--accent-color); margin-right: 8px;"></i>FEE CALCULATOR
+        </div>
 
-        <div class="form-group">
-            <select id="installment-type" style="padding: 10px;">
-                <option value="" disabled selected>Choose Fee Type</option>
+        <div class="form-group"
+            style="border: 2px solid var(--accent-color); padding: 10px; border-radius: 12px; background: rgba(253, 187, 45, 0.05); margin-bottom: 15px;">
+            <label style="text-align: center; color: var(--accent-color); font-size: 0.8rem; margin-bottom: 5px;">SELECT
+                TYPE BELOW 👇</label>
+            <select id="installment-type"
+                style="padding: 12px; font-weight: 800; color: #fff; background: rgba(0,0,0,0.2);">
+                <option value="" disabled selected>Select Category</option>
                 <option value="first">First Installment</option>
                 <option value="second">Second Installment</option>
                 <option value="sslc-card">SSLC Card</option>
